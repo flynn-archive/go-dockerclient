@@ -5,7 +5,6 @@
 package docker
 
 import (
-	"github.com/dotcloud/docker"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -23,7 +22,7 @@ func TestVersion(t *testing.T) {
 		endpoint: "http://localhost:4243/",
 		client:   &http.Client{Transport: &fakeRT},
 	}
-	expected := docker.APIVersion{
+	expected := APIVersion{
 		Version:   "0.2.2",
 		GitCommit: "5a2a5cc+CHANGES",
 		GoVersion: "go1.0.3",
@@ -76,7 +75,7 @@ func TestInfo(t *testing.T) {
 		endpoint: "http://localhost:3232",
 		client:   &http.Client{Transport: &fakeRT},
 	}
-	expected := docker.APIInfo{
+	expected := APIInfo{
 		Containers:  11,
 		Images:      16,
 		Debug:       false,

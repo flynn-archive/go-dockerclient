@@ -7,7 +7,6 @@ package docker
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dotcloud/docker"
 	"io"
 	"net/http"
 	"os"
@@ -27,13 +26,13 @@ type ListContainersOptions struct {
 // ListContainers returns a slice of containers matching the given criteria.
 //
 // See http://goo.gl/QpCnDN for more details.
-func (c *Client) ListContainers(opts ListContainersOptions) ([]docker.APIContainers, error) {
+func (c *Client) ListContainers(opts ListContainersOptions) ([]APIContainers, error) {
 	path := "/containers/json?" + queryString(opts)
 	body, _, err := c.do("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var containers []docker.APIContainers
+	var containers []APIContainers
 	err = json.Unmarshal(body, &containers)
 	if err != nil {
 		return nil, err
@@ -44,7 +43,7 @@ func (c *Client) ListContainers(opts ListContainersOptions) ([]docker.APIContain
 // InspectContainer returns information about a container by its ID.
 //
 // See http://goo.gl/2o52Sx for more details.
-func (c *Client) InspectContainer(id string) (*docker.Container, error) {
+func (c *Client) InspectContainer(id string) (*Container, error) {
 	path := "/containers/" + id + "/json"
 	body, status, err := c.do("GET", path, nil)
 	if status == http.StatusNotFound {
@@ -53,7 +52,7 @@ func (c *Client) InspectContainer(id string) (*docker.Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	var container docker.Container
+	var container Container
 	err = json.Unmarshal(body, &container)
 	if err != nil {
 		return nil, err
@@ -65,7 +64,7 @@ func (c *Client) InspectContainer(id string) (*docker.Container, error) {
 // or an error in case of failure.
 //
 // See http://goo.gl/tjihUc for more details.
-func (c *Client) CreateContainer(config *docker.Config) (*docker.Container, error) {
+func (c *Client) CreateContainer(config *Config) (*Container, error) {
 	body, status, err := c.do("POST", "/containers/create", config)
 	if status == http.StatusNotFound {
 		return nil, ErrNoSuchImage
@@ -73,7 +72,7 @@ func (c *Client) CreateContainer(config *docker.Config) (*docker.Container, erro
 	if err != nil {
 		return nil, err
 	}
-	var container docker.Container
+	var container Container
 	err = json.Unmarshal(body, &container)
 	if err != nil {
 		return nil, err
@@ -86,7 +85,7 @@ func (c *Client) CreateContainer(config *docker.Config) (*docker.Container, erro
 // See http://goo.gl/y5GZlE for more details.
 func (c *Client) StartContainer(id string) error {
 	path := "/containers/" + id + "/start"
-	hostConfig := &docker.HostConfig{}
+	hostConfig := &HostConfig{}
 	_, status, err := c.do("POST", path, hostConfig)
 	if status == http.StatusNotFound {
 		return &NoSuchContainer{ID: id}
@@ -187,13 +186,13 @@ type CommitContainerOptions struct {
 	Tag        string
 	Message    string `qs:"m"`
 	Author     string
-	Run        *docker.Config
+	Run        *Config
 }
 
 // CommitContainer creates a new image from a container's changes.
 //
 // See http://goo.gl/628gxm for more details.
-func (c *Client) CommitContainer(opts CommitContainerOptions) (*docker.Image, error) {
+func (c *Client) CommitContainer(opts CommitContainerOptions) (*Image, error) {
 	path := "/commit?" + queryString(opts)
 	body, status, err := c.do("POST", path, nil)
 	if status == http.StatusNotFound {
@@ -202,7 +201,7 @@ func (c *Client) CommitContainer(opts CommitContainerOptions) (*docker.Image, er
 	if err != nil {
 		return nil, err
 	}
-	var image docker.Image
+	var image Image
 	err = json.Unmarshal(body, &image)
 	if err != nil {
 		return nil, err

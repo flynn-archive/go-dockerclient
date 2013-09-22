@@ -6,18 +6,17 @@ package docker
 
 import (
 	"encoding/json"
-	"github.com/dotcloud/docker"
 )
 
 // Version returns version information about the docker server.
 //
 // See http://goo.gl/IqKNRE for more details.
-func (c *Client) Version() (*docker.APIVersion, error) {
+func (c *Client) Version() (*APIVersion, error) {
 	body, _, err := c.do("GET", "/version", nil)
 	if err != nil {
 		return nil, err
 	}
-	var version docker.APIVersion
+	var version APIVersion
 	err = json.Unmarshal(body, &version)
 	if err != nil {
 		return nil, err
@@ -28,12 +27,12 @@ func (c *Client) Version() (*docker.APIVersion, error) {
 // Info returns system-wide information, like the number of running containers.
 //
 // See http://goo.gl/LOmySw for more details.
-func (c *Client) Info() (*docker.APIInfo, error) {
+func (c *Client) Info() (*APIInfo, error) {
 	body, _, err := c.do("GET", "/info", nil)
 	if err != nil {
 		return nil, err
 	}
-	var info docker.APIInfo
+	var info APIInfo
 	err = json.Unmarshal(body, &info)
 	if err != nil {
 		return nil, err
