@@ -6,6 +6,10 @@ package docker
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 // Version returns version information about the docker server.
@@ -38,4 +42,59 @@ func (c *Client) Info() (*APIInfo, error) {
 		return nil, err
 	}
 	return &info, nil
+}
+
+type EventStream struct {
+	Events chan *Event
+	// Error must only be read after Stream has closed
+	Error error
+
+	conn io.ReadCloser
+}
+
+func (s *EventStream) Close() error { return s.conn.Close() }
+
+func (s *EventStream) stream() {
+	decoder := json.NewDecoder(s.conn)
+	for {
+		event := &Event{}
+		if err := decoder.Decode(event); err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			s.Error = err
+			break
+		}
+		s.Events <- event
+	}
+	close(s.Events)
+	s.conn.Close()
+}
+
+// Events returns a stream of container events.
+func (c *Client) Events() (*EventStream, error) {
+	req, err := http.NewRequest("GET", c.getURL("/events"), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", userAgent)
+	res, err := c.client.Do(req)
+	if err != nil {
+		if strings.Contains(err.Error(), "connection refused") {
+			err = ErrConnectionRefused
+		}
+		return nil, err
+	}
+	if res.StatusCode != 200 {
+		body, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		return nil, newError(res.StatusCode, body)
+	}
+
+	stream := &EventStream{
+		Events: make(chan *Event),
+		conn:   res.Body,
+	}
+	go stream.stream()
+	return stream, nil
 }

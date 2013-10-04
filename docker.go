@@ -141,3 +141,17 @@ type APIImages struct {
 	Size        int64
 	VirtualSize int64
 }
+
+type EventErr struct {
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+type Event struct {
+	Status   string   `json:"status,omitempty"`
+	Progress string   `json:"progress,omitempty"`
+	ID       string   `json:"id,omitempty"`
+	From     string   `json:"from,omitempty"`
+	Time     int64    `json:"time,omitempty"`
+	Error    EventErr `json:"errorDetail,omitempty"`
+}
