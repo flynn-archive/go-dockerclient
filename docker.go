@@ -148,10 +148,10 @@ type EventErr struct {
 }
 
 type Event struct {
-	Status   string   `json:"status,omitempty"`
-	Progress string   `json:"progress,omitempty"`
-	ID       string   `json:"id,omitempty"`
-	From     string   `json:"from,omitempty"`
-	Time     int64    `json:"time,omitempty"`
-	Error    EventErr `json:"errorDetail,omitempty"`
+	Status   string    `json:"status,omitempty"`
+	Progress string    `json:"progress,omitempty"`
+	ID       string    `json:"id,omitempty"`
+	From     string    `json:"from,omitempty"`
+	Time     int64     `json:"time,omitempty"`
+	Error    *EventErr `json:"errorDetail,omitempty"`
 }
