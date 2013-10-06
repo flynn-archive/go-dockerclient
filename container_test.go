@@ -555,7 +555,7 @@ func TestAttachToContainer(t *testing.T) {
 		Container:    "a123456",
 		OutputStream: &stdout,
 		ErrorStream:  &stderr,
-		InputFile:    file,
+		InputStream:  file,
 		Stdin:        true,
 		Stdout:       true,
 		Stderr:       true,

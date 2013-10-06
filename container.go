@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 // ListContainersOptions specify parameters to the ListContainers function.
@@ -215,7 +214,7 @@ func (c *Client) CommitContainer(opts CommitContainerOptions) (*Image, error) {
 // See http://goo.gl/oPzcqH for more details.
 type AttachToContainerOptions struct {
 	Container    string
-	InputFile    *os.File
+	InputStream  io.Reader
 	OutputStream io.Writer
 	ErrorStream  io.Writer
 	RawTerminal  bool
@@ -246,10 +245,10 @@ func (c *Client) AttachToContainer(opts AttachToContainerOptions) error {
 	}
 	stdout := opts.OutputStream
 	stderr := opts.ErrorStream
-	stdin := opts.InputFile
+	stdin := opts.InputStream
 	raw := opts.RawTerminal
 	opts.Container = ""
-	opts.InputFile = nil
+	opts.InputStream = nil
 	opts.OutputStream = nil
 	opts.ErrorStream = nil
 	opts.RawTerminal = false
