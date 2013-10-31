@@ -1,4 +1,4 @@
-// Copyright 2013 Francisco Souza. All rights reserved.
+// Copyright 2013 go-dockerclient authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -25,10 +25,7 @@ import (
 	"strings"
 )
 
-const (
-	apiVersion = "v1.1"
-	userAgent  = "go-dockerclient"
-)
+const userAgent = "go-dockerclient"
 
 var (
 	// ErrInvalidEndpoint is returned when the endpoint is not a valid HTTP URL.
@@ -44,7 +41,6 @@ type Client struct {
 	endpoint    string
 	endpointURL *url.URL
 	client      *http.Client
-	in          io.ReadCloser
 	out         io.WriteCloser
 }
 
@@ -59,7 +55,6 @@ func NewClient(endpoint string) (*Client, error) {
 		endpoint:    endpoint,
 		endpointURL: u,
 		client:      http.DefaultClient,
-		in:          os.Stdin,
 		out:         os.Stdout,
 	}, nil
 }
@@ -195,7 +190,7 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, in io.Reader, 
 }
 
 func (c *Client) getURL(path string) string {
-	return fmt.Sprintf("%s/%s%s", strings.TrimRight(c.endpoint, "/"), apiVersion, path)
+	return fmt.Sprintf("%s%s", strings.TrimRight(c.endpoint, "/"), path)
 }
 
 type jsonMessage struct {

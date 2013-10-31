@@ -1,4 +1,4 @@
-// Copyright 2013 Francisco Souza. All rights reserved.
+// Copyright 2013 go-dockerclient authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -298,33 +298,33 @@ func TestImportImageFromUrl(t *testing.T) {
 	client := newTestClient(fakeRT)
 	var buf bytes.Buffer
 	opts := ImportImageOptions{Source: "http://mycompany.com/file.tar", Repository: "testimage"}
-	err := client.ImportImage(opts, &buf)
+	err := client.ImportImage(opts, nil, &buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 	req := fakeRT.requests[0]
-	expected := map[string][]string{"fromSrc": {opts.Source}, "repository": {opts.Repository}}
+	expected := map[string][]string{"fromSrc": {opts.Source}, "repo": {opts.Repository}}
 	got := map[string][]string(req.URL.Query())
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("ImportImage: wrong query string. Want %#v. Got %#v.", expected, got)
 	}
 }
 
-func TestImportImageFromStdin(t *testing.T) {
+func TestImportImageFromInput(t *testing.T) {
 	fakeRT := &FakeRoundTripper{message: "", status: http.StatusOK}
 	client := Client{
 		endpoint: "http://localhost:4243",
 		client:   &http.Client{Transport: fakeRT},
-		in:       stdinMock{bytes.NewBufferString("tar content")},
 	}
+	in := bytes.NewBufferString("tar content")
 	var buf bytes.Buffer
 	opts := ImportImageOptions{Source: "-", Repository: "testimage"}
-	err := client.ImportImage(opts, &buf)
+	err := client.ImportImage(opts, in, &buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 	req := fakeRT.requests[0]
-	expected := map[string][]string{"fromSrc": {opts.Source}, "repository": {opts.Repository}}
+	expected := map[string][]string{"fromSrc": {opts.Source}, "repo": {opts.Repository}}
 	got := map[string][]string(req.URL.Query())
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("ImportImage: wrong query string. Want %#v. Got %#v.", expected, got)
@@ -339,17 +339,18 @@ func TestImportImageFromStdin(t *testing.T) {
 	}
 }
 
-func TestImportImageDoesNotPassesStdinIfSourceIsNotDash(t *testing.T) {
+func TestImportImageDoesNotPassesInputIfSourceIsNotDash(t *testing.T) {
 	fakeRT := &FakeRoundTripper{message: "", status: http.StatusOK}
 	client := newTestClient(fakeRT)
 	var buf bytes.Buffer
+	in := bytes.NewBufferString("foo")
 	opts := ImportImageOptions{Source: "http://test.com/container.tar", Repository: "testimage"}
-	err := client.ImportImage(opts, &buf)
+	err := client.ImportImage(opts, in, &buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 	req := fakeRT.requests[0]
-	expected := map[string][]string{"fromSrc": {opts.Source}, "repository": {opts.Repository}}
+	expected := map[string][]string{"fromSrc": {opts.Source}, "repo": {opts.Repository}}
 	got := map[string][]string(req.URL.Query())
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("ImportImage: wrong query string. Want %#v. Got %#v.", expected, got)
@@ -369,7 +370,7 @@ func TestImportImageShouldPassTarContentToBodyWhenSourceIsFilePath(t *testing.T)
 	var buf bytes.Buffer
 	tarPath := "testing/data/container.tar"
 	opts := ImportImageOptions{Source: tarPath, Repository: "testimage"}
-	err := client.ImportImage(opts, &buf)
+	err := client.ImportImage(opts, nil, &buf)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,6 +386,24 @@ func TestImportImageShouldPassTarContentToBodyWhenSourceIsFilePath(t *testing.T)
 	}
 	if !reflect.DeepEqual(tarContent, body) {
 		t.Errorf("ImportImage: wrong body. Want %#v content. Got %#v.", tarPath, body)
+	}
+}
+
+func TestImportImageShouldChangeSourceToDashWhenItsAFilePath(t *testing.T) {
+	fakeRT := &FakeRoundTripper{message: "", status: http.StatusOK}
+	client := newTestClient(fakeRT)
+	var buf bytes.Buffer
+	tarPath := "testing/data/container.tar"
+	opts := ImportImageOptions{Source: tarPath, Repository: "testimage"}
+	err := client.ImportImage(opts, nil, &buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req := fakeRT.requests[0]
+	expected := map[string][]string{"fromSrc": {"-"}, "repo": {opts.Repository}}
+	got := map[string][]string(req.URL.Query())
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("ImportImage: wrong query string. Want %#v. Got %#v.", expected, got)
 	}
 }
 

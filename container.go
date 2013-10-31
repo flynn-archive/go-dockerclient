@@ -1,4 +1,4 @@
-// Copyright 2013 Francisco Souza. All rights reserved.
+// Copyright 2013 go-dockerclient authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -82,9 +82,8 @@ func (c *Client) CreateContainer(config *Config) (*Container, error) {
 // StartContainer starts a container, returning an errror in case of failure.
 //
 // See http://goo.gl/y5GZlE for more details.
-func (c *Client) StartContainer(id string) error {
+func (c *Client) StartContainer(id string, hostConfig *HostConfig) error {
 	path := "/containers/" + id + "/start"
-	hostConfig := &HostConfig{}
 	_, status, err := c.do("POST", path, hostConfig)
 	if status == http.StatusNotFound {
 		return &NoSuchContainer{ID: id}

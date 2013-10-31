@@ -1,4 +1,4 @@
-// Copyright 2013 Francisco Souza. All rights reserved.
+// Copyright 2013 go-dockerclient authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -28,11 +28,8 @@ func TestNewAPIClient(t *testing.T) {
 	if client.client != http.DefaultClient {
 		t.Errorf("Expected http.Client %#v. Got %#v.", http.DefaultClient, client.client)
 	}
-	if client.in == nil {
-		t.Errorf("Expected stdin %#v. Got %#v.", os.Stdin, client.in)
-	}
 	if client.out == nil {
-		t.Errorf("Expected stdout %#v. Got %#v.", os.Stdin, client.in)
+		t.Errorf("Expected stdout %#v. Got %#v.", os.Stdout, client.out)
 	}
 }
 
@@ -59,10 +56,10 @@ func TestGetURL(t *testing.T) {
 		path     string
 		expected string
 	}{
-		{"http://localhost:4243/", "/", fmt.Sprintf("http://localhost:4243/%s/", apiVersion)},
-		{"http://localhost:4243", "/", fmt.Sprintf("http://localhost:4243/%s/", apiVersion)},
-		{"http://localhost:4243", "/containers/ps", fmt.Sprintf("http://localhost:4243/%s/containers/ps", apiVersion)},
-		{"http://localhost:4243/////", "/", fmt.Sprintf("http://localhost:4243/%s/", apiVersion)},
+		{"http://localhost:4243/", "/", "http://localhost:4243/"},
+		{"http://localhost:4243", "/", "http://localhost:4243/"},
+		{"http://localhost:4243", "/containers/ps", "http://localhost:4243/containers/ps"},
+		{"http://localhost:4243/////", "/", "http://localhost:4243/"},
 	}
 	var client Client
 	for _, tt := range tests {
