@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 // ListContainersOptions specify parameters to the ListContainers function.
@@ -235,6 +237,10 @@ type AttachToContainerOptions struct {
 
 	// Attach to stderr, and use ErrorStream.
 	Stderr bool
+
+	// If set, after a successful connect, a sentinel will be sent and then the
+	// client will block on receive before continuing.
+	Success chan struct{}
 }
 
 // AttachToContainer attaches to a container, using the given options.
@@ -249,13 +255,15 @@ func (c *Client) AttachToContainer(opts AttachToContainerOptions) error {
 	stderr := opts.ErrorStream
 	stdin := opts.InputStream
 	raw := opts.RawTerminal
+	success := opts.Success
 	opts.Container = ""
 	opts.InputStream = nil
 	opts.OutputStream = nil
 	opts.ErrorStream = nil
 	opts.RawTerminal = false
+	opts.Success = nil
 	path := "/containers/" + container + "/attach?" + queryString(opts)
-	return c.hijack("POST", path, raw, stdin, stderr, stdout)
+	return c.hijack("POST", path, raw, success, stdin, stderr, stdout)
 }
 
 func (c *Client) ResizeContainerTTY(id string, height, width int) error {
