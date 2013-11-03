@@ -235,12 +235,14 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, in io.Reader, 
 	return nil
 }
 
+const version = "1.6"
+
 func (c *Client) getURL(path string) string {
 	urlStr := strings.TrimRight(c.endpoint, "/")
 	if c.endpointURL.Scheme == "unix" {
 		urlStr = ""
 	}
-	return fmt.Sprintf("%s%s", urlStr, path)
+	return fmt.Sprintf("%s/v%s%s", urlStr, version, path)
 }
 
 type jsonMessage struct {
