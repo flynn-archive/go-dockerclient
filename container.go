@@ -258,6 +258,14 @@ func (c *Client) AttachToContainer(opts AttachToContainerOptions) error {
 	return c.hijack("POST", path, raw, stdin, stderr, stdout)
 }
 
+func (c *Client) ResizeContainerTTY(id string, height, width int) error {
+	params := make(url.Values)
+	params.Set("h", strconv.Itoa(height))
+	params.Set("w", strconv.Itoa(width))
+	_, _, err := c.do("POST", "/containers/"+id+"/resize?"+params.Encode(), nil)
+	return err
+}
+
 // ExportContainer export the contents of container id as tar archive
 // and prints the exported contents to stdout.
 //
