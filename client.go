@@ -189,8 +189,10 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, in io.Reader, 
 	return nil
 }
 
+const version = "1.6"
+
 func (c *Client) getURL(path string) string {
-	return fmt.Sprintf("%s%s", strings.TrimRight(c.endpoint, "/"), path)
+	return fmt.Sprintf("%s/v%s%s", strings.TrimRight(c.endpoint, "/"), version, path)
 }
 
 type jsonMessage struct {
