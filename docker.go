@@ -91,6 +91,13 @@ type HostConfig struct {
 	Binds           []string
 	ContainerIDFile string
 	LxcConf         []KeyValuePair
+	PortBindings    map[string][]PortBinding
+	Links           []string
+}
+
+type PortBinding struct {
+	HostIp   string
+	HostPort string
 }
 
 type KeyValuePair struct {
