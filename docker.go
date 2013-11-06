@@ -85,6 +85,7 @@ type Config struct {
 	Entrypoint      []string
 	NetworkDisabled bool
 	Privileged      bool
+	ExposedPorts    map[string]struct{}
 }
 
 type HostConfig struct {
