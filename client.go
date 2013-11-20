@@ -77,7 +77,20 @@ func (c *Client) do(method, path string, data interface{}) ([]byte, int, error) 
 	} else if method == "POST" {
 		req.Header.Set("Content-Type", "plain/text")
 	}
-	resp, err := c.client.Do(req)
+	protocol := c.endpointURL.Scheme
+	var resp *http.Response
+	if protocol == "unix" {
+		address := c.endpointURL.Path
+		dial, err := net.Dial(protocol, address)
+		if err != nil {
+			return nil, -1, err
+		}
+		clientconn := httputil.NewClientConn(dial, nil)
+		resp, err = clientconn.Do(req)
+		defer clientconn.Close()
+	} else {
+		resp, err = c.client.Do(req)
+	}
 	if err != nil {
 		if strings.Contains(err.Error(), "connection refused") {
 			return nil, -1, ErrConnectionRefused
@@ -153,7 +166,11 @@ func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader
 		return err
 	}
 	req.Header.Set("Content-Type", "plain/text")
-	dial, err := net.Dial("tcp", c.endpointURL.Host)
+	protocol := c.endpointURL.Scheme
+	if protocol != "unix" {
+		protocol = "tcp"
+	}
+	dial, err := net.Dial(protocol, c.endpointURL.Host)
 	if err != nil {
 		return err
 	}
@@ -187,7 +204,11 @@ func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader
 const version = "1.6"
 
 func (c *Client) getURL(path string) string {
-	return fmt.Sprintf("%s/v%s%s", strings.TrimRight(c.endpoint, "/"), version, path)
+	urlStr := strings.TrimRight(c.endpoint, "/")
+	if c.endpointURL.Scheme == "unix" {
+		urlStr = ""
+	}
+	return fmt.Sprintf("%s/v%s%s", urlStr, version, path)
 }
 
 type jsonMessage struct {
@@ -265,21 +286,25 @@ func parseEndpoint(endpoint string) (*url.URL, error) {
 	if err != nil {
 		return nil, ErrInvalidEndpoint
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
+	if u.Scheme != "http" && u.Scheme != "https" && u.Scheme != "unix" {
 		return nil, ErrInvalidEndpoint
 	}
-	_, port, err := net.SplitHostPort(u.Host)
-	if err != nil {
-		if e, ok := err.(*net.AddrError); ok {
-			if e.Err == "missing port in address" {
-				return u, nil
+	if u.Scheme != "unix" {
+		_, port, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			if e, ok := err.(*net.AddrError); ok {
+				if e.Err == "missing port in address" {
+					return u, nil
+				}
 			}
+			return nil, ErrInvalidEndpoint
 		}
-		return nil, ErrInvalidEndpoint
-	}
-	number, err := strconv.ParseInt(port, 10, 64)
-	if err == nil && number > 0 && number < 65536 {
-		return u, nil
+		number, err := strconv.ParseInt(port, 10, 64)
+		if err == nil && number > 0 && number < 65536 {
+			return u, nil
+		}
+	} else {
+		return u, nil // we don't need port when using a unix socket
 	}
 	return nil, ErrInvalidEndpoint
 }

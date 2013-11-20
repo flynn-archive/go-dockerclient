@@ -45,12 +45,8 @@ func TestVersion(t *testing.T) {
 }
 
 func TestVersionError(t *testing.T) {
-	client := Client{
-		endpoint: "http://localhost:4242",
-		client: &http.Client{
-			Transport: &FakeRoundTripper{message: "internal error", status: http.StatusInternalServerError},
-		},
-	}
+	fakeRT := &FakeRoundTripper{message: "internal error", status: http.StatusInternalServerError}
+	client := newTestClient(fakeRT)
 	version, err := client.Version()
 	if version != nil {
 		t.Errorf("Version(): expected <nil> value, got %#v.", version)
@@ -102,12 +98,8 @@ func TestInfo(t *testing.T) {
 }
 
 func TestInfoError(t *testing.T) {
-	client := Client{
-		endpoint: "http://localhost:4242",
-		client: &http.Client{
-			Transport: &FakeRoundTripper{message: "internal error", status: http.StatusInternalServerError},
-		},
-	}
+	fakeRT := &FakeRoundTripper{message: "internal error", status: http.StatusInternalServerError}
+	client := newTestClient(fakeRT)
 	version, err := client.Info()
 	if version != nil {
 		t.Errorf("Info(): expected <nil> value, got %#v.", version)
