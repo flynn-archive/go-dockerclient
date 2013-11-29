@@ -13,12 +13,14 @@ type APIContainers struct {
 	Ports      []APIPort
 	SizeRw     int64
 	SizeRootFs int64
+	Names      []string
 }
 
 type APIPort struct {
 	PrivatePort int64
 	PublicPort  int64
 	Type        string
+	IP          string
 }
 
 type Container struct {
@@ -39,7 +41,10 @@ type Container struct {
 	ResolvConfPath string
 	HostnamePath   string
 	HostsPath      string
+	Name           string
+	Driver         string
 
+	Volumes   map[string]string
 	VolumesRW map[string]bool
 }
 
@@ -50,7 +55,8 @@ type NetworkSettings struct {
 	IPPrefixLen int
 	Gateway     string
 	Bridge      string
-	PortMapping map[string]PortMapping
+	PortMapping map[string]PortMapping // Deprecated
+	Ports       map[string][]PortBinding
 }
 
 type State struct {
@@ -71,7 +77,8 @@ type Config struct {
 	AttachStdin     bool
 	AttachStdout    bool
 	AttachStderr    bool
-	PortSpecs       []string
+	PortSpecs       []string // Deprecated - Can be in the format of 8080/tcp
+	ExposedPorts    map[string]struct{}
 	Tty             bool // Attach standard streams to a tty, including stdin if it is not closed.
 	OpenStdin       bool // Open stdin
 	StdinOnce       bool // If true, close stdin after the 1 attached client disconnects.
@@ -84,16 +91,16 @@ type Config struct {
 	WorkingDir      string
 	Entrypoint      []string
 	NetworkDisabled bool
-	Privileged      bool
-	ExposedPorts    map[string]struct{}
 }
 
 type HostConfig struct {
 	Binds           []string
 	ContainerIDFile string
 	LxcConf         []KeyValuePair
+	Privileged      bool
 	PortBindings    map[string][]PortBinding
 	Links           []string
+	PublishAllPorts bool
 }
 
 type PortBinding struct {
@@ -142,12 +149,12 @@ type APIInfo struct {
 }
 
 type APIImages struct {
-	Repository  string `json:",omitempty"`
-	Tag         string `json:",omitempty"`
-	ID          string `json:"Id"`
+	ID          string   `json:"Id"`
+	RepoTags    []string `json:",omitempty"`
 	Created     int64
 	Size        int64
 	VirtualSize int64
+	ParentId    string `json:",omitempty"`
 }
 
 type EventErr struct {
