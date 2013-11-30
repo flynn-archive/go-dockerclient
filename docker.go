@@ -91,6 +91,7 @@ type Config struct {
 	WorkingDir      string
 	Entrypoint      []string
 	NetworkDisabled bool
+	Name            string `json:"-"`
 }
 
 type HostConfig struct {

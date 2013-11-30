@@ -66,7 +66,11 @@ func (c *Client) InspectContainer(id string) (*Container, error) {
 //
 // See http://goo.gl/tjihUc for more details.
 func (c *Client) CreateContainer(config *Config) (*Container, error) {
-	body, status, err := c.do("POST", "/containers/create", config)
+	path := "/containers/create"
+	if config.Name != "" {
+		path += "?name=" + config.Name
+	}
+	body, status, err := c.do("POST", path, config)
 	if status == http.StatusNotFound {
 		return nil, ErrNoSuchImage
 	}
