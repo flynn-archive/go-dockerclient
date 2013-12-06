@@ -56,10 +56,10 @@ func TestGetURL(t *testing.T) {
 		path     string
 		expected string
 	}{
-		{"http://localhost:4243/", "/", "http://localhost:4243/"},
-		{"http://localhost:4243", "/", "http://localhost:4243/"},
-		{"http://localhost:4243", "/containers/ps", "http://localhost:4243/containers/ps"},
-		{"http://localhost:4243/////", "/", "http://localhost:4243/"},
+		{"http://localhost:4243/", "/", "http://localhost:4243/v1.6/"},
+		{"http://localhost:4243", "/", "http://localhost:4243/v1.6/"},
+		{"http://localhost:4243", "/containers/ps", "http://localhost:4243/v1.6/containers/ps"},
+		{"http://localhost:4243/////", "/", "http://localhost:4243/v1.6/"},
 	}
 	var client Client
 	for _, tt := range tests {
