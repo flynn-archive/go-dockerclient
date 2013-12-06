@@ -63,11 +63,11 @@ func TestGetURL(t *testing.T) {
 		path     string
 		expected string
 	}{
-		{"http://localhost:4243/", "/", "http://localhost:4243/"},
-		{"http://localhost:4243", "/", "http://localhost:4243/"},
-		{"http://localhost:4243", "/containers/ps", "http://localhost:4243/containers/ps"},
-		{"http://localhost:4243/////", "/", "http://localhost:4243/"},
-		{"unix:///var/run/docker.socket", "/containers", "/containers"},
+		{"http://localhost:4243/", "/", "http://localhost:4243/v1.6/"},
+		{"http://localhost:4243", "/", "http://localhost:4243/v1.6/"},
+		{"http://localhost:4243", "/containers/ps", "http://localhost:4243/v1.6/containers/ps"},
+		{"http://localhost:4243/////", "/", "http://localhost:4243/v1.6"},
+		{"unix:///var/run/docker.socket", "/containers", "/v1.6/containers"},
 	}
 	for _, tt := range tests {
 		client, _ := NewClient(tt.endpoint)
