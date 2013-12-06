@@ -1,12 +1,21 @@
 language: go
 go:
-  - 1.1.2
   - 1.2
   - tip
-env:
-  - GOARCH=amd64
-  - GOARCH=386
-install:
-  - go get -d ./...
+
+before_install:
+  - go install -race std
+  - go get code.google.com/p/go.tools/cmd/cover
+
 script:
-  - go test ./...
+  - go test -race ./...
+  - go test -cover ./...
+
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#flynn"
+    use_notice: true
+    skip_join: true
+    template:
+      - "%{repository}/%{branch} - %{commit}: %{message} %{build_url}"
