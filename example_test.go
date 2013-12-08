@@ -6,7 +6,7 @@ package docker_test
 
 import (
 	"bytes"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/flynn/go-dockerclient"
 	"log"
 )
 
