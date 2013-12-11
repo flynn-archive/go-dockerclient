@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/fsouza/go-dockerclient/term"
 	"github.com/fsouza/go-dockerclient/utils"
 	"io"
 	"io/ioutil"
@@ -181,7 +180,7 @@ func (c *Client) stream(method, path string, headers map[string]string, in io.Re
 	return nil
 }
 
-func (c *Client) hijack(method, path string, setRawTerminal bool, success chan struct{}, in io.Reader, errStream io.Writer, out io.Writer) error {
+func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader, errStream io.Writer, out io.Writer) error {
 	req, err := http.NewRequest(method, c.getURL(path), nil)
 	if err != nil {
 		return err
@@ -215,13 +214,6 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, success chan s
 		}
 		errStdout <- err
 	}()
-	if inFile, ok := in.(*os.File); ok && setRawTerminal && term.IsTerminal(inFile.Fd()) && os.Getenv("NORAW") == "" {
-		oldState, err := term.SetRawTerminal(inFile.Fd())
-		if err != nil {
-			return err
-		}
-		defer term.RestoreTerminal(inFile.Fd(), oldState)
-	}
 	go func() {
 		if in != nil {
 			io.Copy(rwc, in)
