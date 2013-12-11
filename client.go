@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dotcloud/docker/term"
 	"io"
 	"io/ioutil"
 	"net"
@@ -148,7 +147,7 @@ func (c *Client) stream(method, path string, in io.Reader, out io.Writer) error 
 	return nil
 }
 
-func (c *Client) hijack(method, path string, setRawTerminal bool, success chan struct{}, in io.Reader, errStream io.Writer, out io.Writer) error {
+func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader, errStream io.Writer, out io.Writer) error {
 	req, err := http.NewRequest(method, c.getURL(path), nil)
 	if err != nil {
 		return err
@@ -171,13 +170,6 @@ func (c *Client) hijack(method, path string, setRawTerminal bool, success chan s
 		_, err := io.Copy(out, br)
 		errStdout <- err
 	}()
-	if inFile, ok := in.(*os.File); ok && setRawTerminal && term.IsTerminal(inFile.Fd()) && os.Getenv("NORAW") == "" {
-		oldState, err := term.SetRawTerminal(inFile.Fd())
-		if err != nil {
-			return err
-		}
-		defer term.RestoreTerminal(inFile.Fd(), oldState)
-	}
 	go func() {
 		if in != nil {
 			io.Copy(rwc, in)
