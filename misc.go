@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 )
 
@@ -71,6 +73,11 @@ func (s *EventStream) stream() {
 	s.conn.Close()
 }
 
+type readCloser struct {
+	io.Reader
+	io.Closer
+}
+
 // Events returns a stream of container events.
 func (c *Client) Events() (*EventStream, error) {
 	req, err := http.NewRequest("GET", c.getURL("/events"), nil)
@@ -78,7 +85,24 @@ func (c *Client) Events() (*EventStream, error) {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", userAgent)
-	res, err := c.client.Do(req)
+	protocol := c.endpointURL.Scheme
+	var res *http.Response
+	var closer io.Closer
+	if protocol == "unix" {
+		address := c.endpointURL.Path
+		dial, err := net.Dial(protocol, address)
+		if err != nil {
+			return nil, err
+		}
+		clientconn := httputil.NewClientConn(dial, nil)
+		res, err = clientconn.Do(req)
+		closer = clientconn
+	} else {
+		res, err = c.client.Do(req)
+		if err != nil {
+			closer = res.Body
+		}
+	}
 	if err != nil {
 		if strings.Contains(err.Error(), "connection refused") {
 			err = ErrConnectionRefused
@@ -93,7 +117,7 @@ func (c *Client) Events() (*EventStream, error) {
 
 	stream := &EventStream{
 		Events: make(chan *Event),
-		conn:   res.Body,
+		conn:   readCloser{res.Body, closer},
 	}
 	go stream.stream()
 	return stream, nil
