@@ -17,11 +17,8 @@ func TestVersion(t *testing.T) {
      "GitCommit":"5a2a5cc+CHANGES",
      "GoVersion":"go1.0.3"
 }`
-	fakeRT := FakeRoundTripper{message: body, status: http.StatusOK}
-	client := Client{
-		endpoint: "http://localhost:4243/",
-		client:   &http.Client{Transport: &fakeRT},
-	}
+	fakeRT := &FakeRoundTripper{message: body, status: http.StatusOK}
+	client := newTestClient(fakeRT)
 	expected := APIVersion{
 		Version:   "0.2.2",
 		GitCommit: "5a2a5cc+CHANGES",
@@ -66,11 +63,8 @@ func TestInfo(t *testing.T) {
      "MemoryLimit":true,
      "SwapLimit":false
 }`
-	fakeRT := FakeRoundTripper{message: body, status: http.StatusOK}
-	client := Client{
-		endpoint: "http://localhost:3232",
-		client:   &http.Client{Transport: &fakeRT},
-	}
+	fakeRT := &FakeRoundTripper{message: body, status: http.StatusOK}
+	client := newTestClient(fakeRT)
 	expected := APIInfo{
 		Containers:  11,
 		Images:      16,
