@@ -19,7 +19,7 @@ import (
 
 func newTestClient(rt *FakeRoundTripper) Client {
 	endpoint := "http://localhost:4243"
-	u, _ := parseEndpoint("http://localhost:4243")
+	u, _ := parseEndpoint(endpoint)
 	client := Client{
 		endpoint:    endpoint,
 		endpointURL: u,
