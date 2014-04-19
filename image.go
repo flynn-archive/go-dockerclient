@@ -114,6 +114,7 @@ func (c *Client) PushImage(opts PushImageOptions, auth AuthConfiguration, w io.W
 type PullImageOptions struct {
 	Repository   string `qs:"fromImage"`
 	Registry     string
+	Tag          string
 	OutputStream io.Writer `qs:"-"`
 }
 
