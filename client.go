@@ -173,7 +173,7 @@ func (c *Client) stream(method, path string, in io.Reader, out io.Writer) error 
 	return nil
 }
 
-func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader, errStream io.Writer, out io.Writer) error {
+func (c *Client) hijack(method, path string, success chan struct{}, in io.Reader, out io.Writer) error {
 	req, err := http.NewRequest(method, c.getURL(path), nil)
 	if err != nil {
 		return err
