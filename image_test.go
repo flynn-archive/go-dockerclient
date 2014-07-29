@@ -302,7 +302,7 @@ func TestPullImageTag(t *testing.T) {
 		Tag:          "latest",
 		OutputStream: &buf,
 	}
-	err := client.PullImage(opts, AuthConfiguration{})
+	err := client.PullImage(opts)
 	if err != nil {
 		t.Fatal(err)
 	}
